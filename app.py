@@ -10,7 +10,7 @@ CONFIG_FILE = 'config.json'
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         default_config = {
-            "station_name": "Radio La Voix Divine",
+            "station_name": "La Voix Divine",
             "stream_url": "http://162.244.81.219:8020/live",
             "volume": 80
         }
@@ -20,6 +20,7 @@ def load_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
+# Main UI Route
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -29,11 +30,17 @@ def index():
 def get_config():
     return jsonify(load_config())
 
-# Tell Volumio to play the stream URL
+# Tell Volumio to play the stream URL (Supports Custom URL from UI)
 @app.route('/api/play-stream', methods=['POST'])
 def play_stream():
     config = load_config()
-    stream_url = config.get("stream_url")
+    
+    # Check if frontend sent a custom URL
+    data = request.get_json(silent=True)
+    if data and 'url' in data:
+        stream_url = data['url']
+    else:
+        stream_url = config.get("stream_url")
     
     # Using Volumio's internal REST API to play the Web Radio
     try:
@@ -44,4 +51,5 @@ def play_stream():
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
+    # Run the server on all available network interfaces at port 5000
     app.run(host='0.0.0.0', port=5000)

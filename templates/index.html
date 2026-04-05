@@ -3,96 +3,512 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio La Voix Divine</title>
+    <title>Professional Radio UI - Custom URL</title>
     <style>
-        /* Locked perfectly to HyperPixel 4.0 Resolution */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
         body {
-            background-color: #0f172a; 
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0;
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
+            display: flex;
             justify-content: center;
-            width: 720px; 
-            height: 720px; 
+            align-items: center;
+            height: 100vh;
+            background-color: #0f172a; 
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Scaled exactly for HyperPixel 4.0 (720x720) */
+        .screen {
+            width: 720px;
+            height: 720px;
+            background: #ffffff; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            padding: 40px 45px 55px 45px; 
+            position: relative;
+            color: #1e293b; 
             overflow: hidden;
         }
-        .container { 
-            text-align: center; 
-            width: 90%; 
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            color: #64748b; 
+            width: 100%;
+            position: relative;
+            z-index: 20; 
         }
-        .logo {
-            width: 200px;
-            height: 200px;
-            background: #1e293b;
+
+        .left-group {
+            display: flex;
+            align-items: center;
+            gap: 25px; 
+        }
+
+        .icon-group {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 10px; 
+            margin: -10px; 
+        }
+        
+        .icon-group:hover { opacity: 0.7; }
+        .status-on { color: #2563eb; }
+        .status-off { color: #94a3b8; }
+
+        /* --- FIXED VERTICAL VOLUME POPUP --- */
+        .volume-popup {
+            position: absolute;
+            top: 70px; 
+            right: 20px;
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
             border-radius: 20px;
-            margin: 0 auto 30px auto;
+            padding: 20px 20px 25px 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-15px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 10;
+        }
+
+        .volume-popup.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .vol-popup-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 20px; 
+            background: #eff6ff;
+            padding: 6px 15px;
+            border-radius: 12px;
+        }
+
+        .slider-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 80px;
+            width: 40px;
+            height: 160px; 
+            margin: 0;
         }
-        #station-name { 
-            font-size: 42px; 
-            font-weight: bold;
-            margin-bottom: 10px; 
-        }
-        #stream-status {
-            font-size: 20px;
-            color: #10b981; /* Green color for active */
-            margin-bottom: 40px;
-        }
-        .controls button {
-            background: #3b82f6; 
-            color: white; 
-            border: none;
-            padding: 25px 50px; 
-            font-size: 28px; 
-            border-radius: 15px;
-            margin: 10px; 
+
+        .volume-slider-vertical {
+            -webkit-appearance: none;
+            width: 150px; 
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            outline: none;
+            transform: rotate(-90deg); 
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin: 0;
         }
-        .controls button:active { background: #2563eb; }
+
+        .volume-slider-vertical::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        /* --- REST OF THE UI --- */
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-top: -30px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .artwork {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); 
+            margin-bottom: 35px;
+            animation: spin 8s linear infinite; 
+            animation-play-state: running;
+            background-color: #f1f5f9;
+        }
+        
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover; 
+            border: 6px solid #ffffff; 
+            box-sizing: border-box;
+        }
+
+        .station-subtitle {
+            color: #2563eb; 
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .station-name {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+            color: #0f172a; 
+        }
+
+        .playing-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #ef4444; 
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .bottom-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 45px;
+        }
+
+        .btn {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            color: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.06), -5px -5px 15px #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: inset 4px 4px 10px rgba(0,0,0,0.06);
+            background: #f1f5f9;
+        }
+
+        .btn-small { width: 85px; height: 85px; }
+        .btn-small svg { width: 28px; height: 28px; fill: #2563eb; stroke: #2563eb; }
+
+        .btn-large {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+            box-shadow: 6px 6px 18px rgba(37, 99, 235, 0.3), -4px -4px 12px #ffffff;
+        }
+
+        .btn-large svg {
+            width: 45px;
+            height: 45px;
+            fill: #ffffff; 
+            margin-left: 6px;
+        }
+
+        .btn-large:active {
+            background: #1d4ed8;
+            box-shadow: inset 5px 5px 12px rgba(0,0,0,0.2);
+        }
+
+        /* --- CUSTOM URL MODAL --- */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-box {
+            background: white;
+            width: 80%;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 0;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-sizing: border-box;
+            outline: none;
+        }
+        
+        .modal-input:focus { border-color: #3b82f6; }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 50%;
+        }
+
+        .btn-cancel { background: #f1f5f9; color: #64748b; }
+        .btn-play { background: #3b82f6; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">📻</div>
-        <div id="station-name">Loading...</div>
-        <div id="stream-status">Connecting to stream...</div>
+    <div class="screen">
+        <div class="top-bar">
+            <div class="left-group">
+                <div class="icon-group status-on" id="wifiToggle">
+                    <svg id="wifiIcon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                </div>
+                <div class="icon-group status-on" id="btToggle">
+                    <svg id="btIcon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline>
+                    </svg>
+                </div>
+                <div class="icon-group status-on" id="urlToggle" style="color: #10b981;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="icon-group status-on" id="audioToggle">
+                <svg id="audioIcon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+            </div>
+            
+            <div class="volume-popup" id="volumePopup">
+                <div class="vol-popup-text" id="volText">80%</div>
+                <div class="slider-wrapper">
+                    <input type="range" id="volSlider" min="0" max="100" value="80" class="volume-slider-vertical">
+                </div>
+            </div>
+        </div>
         
-        <div class="controls">
-            <button onclick="playRadio()">▶ Play Stream</button>
+        <div class="center-content">
+            <div class="artwork" id="discArtwork">
+                <img src="https://placehold.co/220x220/3b82f6/ffffff?text=RADIO" alt="Station Logo" class="logo-image">
+            </div>
+            <div class="station-subtitle" id="station-type">Internet Stream</div>
+            <h1 class="station-name" id="station-name">La Voix Divine</h1>
+            <div class="playing-status" id="stream-status">
+                <div class="dot"></div> LIVE
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="controls">
+                <button class="btn btn-small" onclick="alert('Previous Station')">
+                    <svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5" stroke-width="2"></line></svg>
+                </button>
+                <button class="btn btn-large" id="mainPlayBtn" onclick="togglePlay()">
+                    <svg id="playPauseIcon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
+                <button class="btn btn-small" onclick="alert('Next Station')">
+                    <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19" stroke-width="2"></line></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="urlModal">
+            <div class="modal-box">
+                <h3 class="modal-title">Play Custom Stream</h3>
+                <input type="url" id="customUrlInput" class="modal-input" placeholder="http://ip-address:port/stream" value="http://162.244.81.219:8020/live">
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button class="modal-btn btn-play" onclick="playCustomUrl()">Play Stream</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Load settings from config.json automatically
-        fetch('/api/config')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('station-name').innerText = data.station_name;
-            });
+        // --- CUSTOM URL MODAL LOGIC ---
+        const urlModal = document.getElementById('urlModal');
+        document.getElementById('urlToggle').addEventListener('click', () => { urlModal.classList.add('active'); });
+        function closeModal() { urlModal.classList.remove('active'); }
 
-        // Function to start the audio
-        function playRadio() {
-            document.getElementById('stream-status').innerText = "Buffering...";
-            fetch('/api/play-stream', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if(data.status === "playing") {
-                        document.getElementById('stream-status').innerText = "Live: Playing";
-                    } else {
-                        document.getElementById('stream-status').innerText = "Error playing stream";
-                    }
-                });
+        let isPlaying = true;
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const icon = document.getElementById('playPauseIcon');
+            const artwork = document.getElementById('discArtwork');
+            const status = document.getElementById('stream-status');
+            
+            if(isPlaying) {
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+                artwork.style.animationPlayState = 'running';
+                status.innerHTML = '<div class="dot"></div> LIVE';
+            } else {
+                icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+                artwork.style.animationPlayState = 'paused';
+                status.innerHTML = '<div style="width:12px; height:12px; background:#64748b; border-radius:50%;"></div> PAUSED';
+            }
         }
 
-        // Auto-play on load (might be blocked by some browser policies, but good for kiosk)
-        setTimeout(playRadio, 3000);
+        // --- PLAY STREAM API CALL ---
+        function playCustomUrl() {
+            const newUrl = document.getElementById('customUrlInput').value;
+            if(!newUrl) return;
+
+            closeModal();
+            document.getElementById('station-name').innerText = "Custom Stream";
+            document.getElementById('station-type').innerText = "Direct URL";
+            document.getElementById('stream-status').innerText = "Buffering...";
+            
+            fetch('/api/play-stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: newUrl })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(!isPlaying) togglePlay();
+            });
+        }
+
+        // --- VOLUME POPUP LOGIC ---
+        const audioToggle = document.getElementById('audioToggle');
+        const volumePopup = document.getElementById('volumePopup');
+        const volSlider = document.getElementById('volSlider');
+        const volText = document.getElementById('volText');
+        const audioIcon = document.getElementById('audioIcon');
+        let hidePopupTimer; let isDragging = false;
+
+        const svgVolOn = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+        const svgVolMute = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+
+        function startHideTimer() {
+            clearTimeout(hidePopupTimer);
+            hidePopupTimer = setTimeout(() => { if (!isDragging) volumePopup.classList.remove('active'); }, 2500); 
+        }
+        function cancelHideTimer() { clearTimeout(hidePopupTimer); }
+
+        audioToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            volumePopup.classList.toggle('active');
+            if(volumePopup.classList.contains('active')) cancelHideTimer();
+        });
+        volumePopup.addEventListener('click', (e) => e.stopPropagation());
+        document.addEventListener('click', () => { if (volumePopup.classList.contains('active')) { volumePopup.classList.remove('active'); cancelHideTimer(); } });
+        volumePopup.addEventListener('mouseleave', () => { if (!isDragging) startHideTimer(); });
+        volumePopup.addEventListener('mouseenter', cancelHideTimer);
+
+        volSlider.addEventListener('mousedown', () => { isDragging = true; cancelHideTimer(); });
+        volSlider.addEventListener('touchstart', () => { isDragging = true; cancelHideTimer(); }, {passive: true});
+        window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; startHideTimer(); } });
+        window.addEventListener('touchend', () => { if (isDragging) { isDragging = false; startHideTimer(); } }, {passive: true});
+
+        function updateVolume() {
+            cancelHideTimer(); 
+            const val = volSlider.value;
+            volText.textContent = val + '%';
+            volSlider.style.background = `linear-gradient(to right, #2563eb ${val}%, #e2e8f0 ${val}%)`;
+            if (val == 0) {
+                audioIcon.innerHTML = svgVolMute;
+                audioToggle.classList.replace('status-on', 'status-off');
+            } else {
+                audioIcon.innerHTML = svgVolOn;
+                audioToggle.classList.replace('status-off', 'status-on');
+            }
+        }
+        volSlider.addEventListener('input', updateVolume);
+        updateVolume();
+
+        // Basic toggles for Wi-Fi and BT
+        document.getElementById('wifiToggle').addEventListener('click', function() { this.classList.toggle('status-off'); this.classList.toggle('status-on'); });
+        document.getElementById('btToggle').addEventListener('click', function() { this.classList.toggle('status-off'); this.classList.toggle('status-on'); });
     </script>
 </body>
 </html>

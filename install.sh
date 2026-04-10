@@ -11,35 +11,43 @@ cd WM8960-Audio-HAT
 sudo ./install.sh
 cd ..
 
-# 2. Install HyperPixel 4.0 Drivers (Legacy branch for client's specific screen)
-echo "Installing Display Drivers..."
-curl -sSL https://get.pimoroni.com/hyperpixel4-legacy | bash
+# 2. Install Dependencies for Native CustomTkinter UI & Audio Engine
+echo "Installing lightweight UI and Audio dependencies..."
+sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox mpd mpc python3-pip python3-tk -y
+sudo pip3 install customtkinter flask --break-system-packages
 
-# 3. Install dependencies for our custom UI (Added xserver-xorg for safety on Pi OS Lite)
-echo "Installing UI dependencies..."
-sudo apt-get install -y python3-pip python3-flask chromium-browser xserver-xorg openbox xinit
-
-# 4. Enable Auto-Login so the UI starts without asking for a password
+# 3. Enable Auto-Login (CRITICAL for booting directly into UI without password)
 echo "Enabling Auto-Login..."
 sudo raspi-config nonint do_boot_behaviour B2
 
-# 5. Setup auto-start for the Kiosk UI
+# 4. Setup auto-start for the Native Python UI
 echo "Configuring Auto-boot..."
 mkdir -p ~/.config/openbox
+
+# Create the autostart file
 cat <<EOT > ~/.config/openbox/autostart
-# Start the Python API in background using exact path
-python3 /home/pi/volumio-radio-ui/app.py &
+# Change directory first so Python finds images/icons properly (Relative Paths fix)
+cd /home/pi/volumio-radio-ui
 
-# Wait a few seconds for server to start
-sleep 10
+# Start the background web server so users can add stations via phone
+python3 web_server.py &
 
-# Start Chromium in Kiosk mode strictly at 720x720
-chromium-browser --kiosk --window-size=720,720 --window-position=0,0 --noerrdialogs --disable-infobars http://localhost:5000 &
+# Wait 5 seconds for systems to initialize
+sleep 5
+
+# Start the Native Python UI directly (NO BROWSER!)
+python3 radio_app.py &
 EOT
 
 # Setup bash profile to start X server automatically on boot
-echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> ~/.bash_profile
+# This checks if we are on terminal 1 and no display is running, then launches the UI
+if ! grep -q "startx" ~/.bash_profile; then
+    echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> ~/.bash_profile
+fi
 
-echo "Setup Complete! The Raspberry Pi will now reboot."
-echo "Note: The audio HAT driver installation might take 5-10 minutes. Please be patient."
-sudo reboot
+# 5. Install HyperPixel 4.0 Drivers (Legacy branch for client's specific screen)
+echo "Installing Display Drivers..."
+# Note: The Pimoroni script is interactive and usually asks to reboot at the very end.
+curl -sSL https://get.pimoroni.com/hyperpixel4-legacy | bash
+
+echo "Setup Complete! If the screen driver didn't reboot automatically, please type 'sudo reboot'."

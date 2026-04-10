@@ -40,7 +40,9 @@ python3 radio_app.py &
 EOT
 
 # Setup bash profile to start X server automatically on boot
-# This checks if we are on terminal 1 and no display is running, then launches the UI
+# Make sure the file exists first so grep doesn't throw a scary error
+touch ~/.bash_profile
+
 if ! grep -q "startx" ~/.bash_profile; then
     echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> ~/.bash_profile
 fi

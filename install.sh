@@ -11,22 +11,26 @@ cd WM8960-Audio-HAT
 sudo ./install.sh
 cd ..
 
-# 2. Install HyperPixel 4.0 Drivers (Pimoroni official script)
+# 2. Install HyperPixel 4.0 Drivers (Legacy branch for client's specific screen)
 echo "Installing Display Drivers..."
-curl -sSL https://get.pimoroni.com/hyperpixel4 | bash
+curl -sSL https://get.pimoroni.com/hyperpixel4-legacy | bash
 
-# 3. Install dependencies for our custom UI
+# 3. Install dependencies for our custom UI (Added xserver-xorg for safety on Pi OS Lite)
 echo "Installing UI dependencies..."
-sudo apt-get install -y python3-pip python3-flask chromium-browser openbox xinit
+sudo apt-get install -y python3-pip python3-flask chromium-browser xserver-xorg openbox xinit
 
-# 4. Setup auto-start for the Kiosk UI
+# 4. Enable Auto-Login so the UI starts without asking for a password
+echo "Enabling Auto-Login..."
+sudo raspi-config nonint do_boot_behaviour B2
+
+# 5. Setup auto-start for the Kiosk UI
 echo "Configuring Auto-boot..."
 mkdir -p ~/.config/openbox
 cat <<EOT > ~/.config/openbox/autostart
-# Start the Python API in background
-python3 $(pwd)/app.py &
+# Start the Python API in background using exact path
+python3 /home/pi/volumio-radio-ui/app.py &
 
-# Wait a few seconds for server and Volumio to start
+# Wait a few seconds for server to start
 sleep 10
 
 # Start Chromium in Kiosk mode strictly at 720x720

@@ -27,10 +27,7 @@ We do **not** use Volumio for this setup.
 
 ### Step 2: The 1-Click Installer
 Connect to your Raspberry Pi via SSH from your computer and run this single command to install all hardware drivers, UI dependencies, and configure the auto-boot sequence:
+## Note: The script takes about 5-10 minutes to compile audio drivers and install browser dependencies. The system will automatically reboot into the UI once finished.
 
 ```bash
 git clone [https://github.com/ShoaibAliWains/volumio-radio-ui.git](https://github.com/ShoaibAliWains/volumio-radio-ui.git) && cd volumio-radio-ui && bash install.sh
-
-///```
-
-## Note: The script takes about 5-10 minutes to compile audio drivers and install browser dependencies. The system will automatically reboot into the UI once finished.

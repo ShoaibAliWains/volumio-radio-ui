@@ -12,8 +12,8 @@ sudo ./install.sh
 cd ..
 
 # 2. Install Dependencies for Web-Based UI
-echo "Installing UI dependencies (Chromium and Flask)..."
-sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox python3-pip chromium-browser -y
+echo "Installing UI dependencies (Chromium, Flask, and MPV Player)..."
+sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox python3-pip chromium-browser mpv -y
 sudo pip3 install flask --break-system-packages
 
 # 3. Enable Auto-Login

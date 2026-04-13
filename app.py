@@ -57,6 +57,27 @@ def play_stream():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+# Stop the audio stream
+@app.route('/api/stop', methods=['POST'])
+def stop_stream():
+    global current_player
+    if current_player:
+        current_player.terminate()
+        current_player.wait()
+        current_player = None
+    return jsonify({"status": "stopped"})
+
+# Hardware Volume Control
+@app.route('/api/volume', methods=['POST'])
+def set_volume():
+    data = request.get_json(silent=True)
+    if data and 'volume' in data:
+        vol = data['volume']
+        # Uses ALSA amixer to change the physical output volume
+        os.system(f"amixer sset PCM {vol}%")
+        return jsonify({"status": "success", "volume": vol})
+    return jsonify({"status": "error"})
+
 if __name__ == '__main__':
     # Run the server on all available network interfaces at port 5000
     app.run(host='0.0.0.0', port=5000)

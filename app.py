@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify
-import urllib.request
 import json
 import os
+import subprocess
 
 app = Flask(__name__)
 CONFIG_FILE = 'config.json'
+current_player = None # Background audio process ko track karne ke liye
 
 # Auto-create & Load config file
 def load_config():
@@ -30,9 +31,10 @@ def index():
 def get_config():
     return jsonify(load_config())
 
-# Tell Volumio to play the stream URL (Supports Custom URL from UI)
+# Play the stream using native Linux player (MPV)
 @app.route('/api/play-stream', methods=['POST'])
 def play_stream():
+    global current_player
     config = load_config()
     
     # Check if frontend sent a custom URL
@@ -42,10 +44,15 @@ def play_stream():
     else:
         stream_url = config.get("stream_url")
     
-    # Using Volumio's internal REST API to play the Web Radio
     try:
-        volumio_api_url = f"http://localhost:3000/api/v1/replaceAndPlay?service=webradio&type=webradio&uri={stream_url}"
-        urllib.request.urlopen(volumio_api_url)
+        # Puraana stream band karein agar koi chal raha hai
+        if current_player:
+            current_player.terminate()
+            current_player.wait()
+
+        # Naya stream play karein (Volumio ki bajaye MPV player use karein)
+        current_player = subprocess.Popen(["mpv", "--no-video", stream_url])
+        
         return jsonify({"status": "playing", "url": stream_url})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
